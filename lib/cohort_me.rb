@@ -7,12 +7,12 @@ module CohortMe
     start_from_interval = options[:start_from_interval] || 12
     interval_name = options[:period] || "weeks"
     activation_class = options[:activation_class] 
-    activation_table_name = ActiveModel::Naming.plural(activation_class)
+    activation_table_name = options[:activation_table_name] || ActiveModel::Naming.plural(activation_class)
     activation_user_id = options[:activation_user_id] || "user_id"
     activation_conditions = options[:activation_conditions] 
 
     activity_class = options[:activity_class] || activation_class
-    activity_table_name = ActiveModel::Naming.plural(activity_class)
+    activity_table_name = options[:activity_table_name] || ActiveModel::Naming.plural(activity_class)
     activity_user_id = options[:activity_user_id] || "user_id"
 
     period_values = %w[weeks days months]
