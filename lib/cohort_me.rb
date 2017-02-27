@@ -37,7 +37,7 @@ module CohortMe
       time_conversion = 1.month.seconds
     end
 
-    cohort_query = activation_class.select("#{activation_table_name}.#{activation_user_id}, MIN(#{activation_table_name}.#{activation_data_field}) as cohort_date").group("#{activation_user_id}").where("#{activation_data_field} > ?", start_from)
+    cohort_query = activation_class.select("#{activation_table_name}.#{activation_user_id}, MIN(#{activation_table_name}.#{activation_date_field}) as cohort_date").group("#{activation_user_id}").where("#{activation_date_field} > ?", start_from)
 
     if activation_conditions
       cohort_query = cohort_query.where(activation_conditions)
