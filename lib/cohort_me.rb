@@ -7,6 +7,7 @@ module CohortMe
     start_from_interval = options[:start_from_interval] || 12
     interval_name = options[:period] || "weeks"
     activation_class = options[:activation_class] 
+    activation_date_field = options[:activation_date_field] || "created_at" 
     activation_table_name = options[:activation_table_name] || ActiveModel::Naming.plural(activation_class)
     activation_user_id = options[:activation_user_id] || "user_id"
     activation_conditions = options[:activation_conditions] 
@@ -34,16 +35,16 @@ module CohortMe
       time_conversion = 1.month.seconds
     end
 
-    cohort_query = activation_class.select("#{activation_table_name}.#{activation_user_id}, MIN(#{activation_table_name}.created_at) as cohort_date").group("#{activation_user_id}").where("created_at > ?", start_from)
+    cohort_query = activation_class.select("#{activation_table_name}.#{activation_user_id}, MIN(#{activation_table_name}.#{activation_date_field}) as cohort_date").group("#{activation_user_id}").where("#{activation_date_field} > ?", start_from)
 
     if activation_conditions
       cohort_query = cohort_query.where(activation_conditions)
     end
 
     if %(mysql mysql2).include?(ActiveRecord::Base.connection.instance_values["config"][:adapter])
-    select_sql = "#{activity_table_name}.#{activity_user_id}, #{activity_table_name}.created_at, cohort_date, FLOOR(TIMESTAMPDIFF(second, cohort_date, #{activity_table_name}.created_at)/#{time_conversion}) as periods_out"
+    select_sql = "#{activity_table_name}.#{activity_user_id}, #{activity_table_name}.#{activity_date_field}, cohort_date, FLOOR(TIMESTAMPDIFF(second, cohort_date, #{activity_table_name}.#{activity_date_field})/#{time_conversion}) as periods_out"
     elsif ActiveRecord::Base.connection.instance_values["config"][:adapter] == "postgresql"      
-      select_sql = "#{activity_table_name}.#{activity_user_id}, #{activity_table_name}.created_at, cohort_date, FLOOR(extract(epoch from (#{activity_table_name}.created_at - cohort_date))/#{time_conversion}) as periods_out"
+      select_sql = "#{activity_table_name}.#{activity_user_id}, #{activity_table_name}.#{activity_date_field}, cohort_date, FLOOR(extract(epoch from (#{activity_table_name}.#{activity_date_field} - cohort_date))/#{time_conversion}) as periods_out"
     else
       raise "database not supported"
     end
